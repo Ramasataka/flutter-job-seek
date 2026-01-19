@@ -12,8 +12,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.uasjobportal.Models.GeneralResponse
 import com.example.uasjobportal.SharedPreferences.SessionManager
 import com.example.uasjobportal.accessRetroFit.RetrofitClient
+import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -59,15 +61,54 @@ class MainActivity : AppCompatActivity() {
             doLogout()
         }
 
-        jobAdapter = JobSeekerAdapter(arrayListOf())
+        jobAdapter = JobSeekerAdapter(arrayListOf()) { jobId ->
+            // Ini akan dijalankan saat tombol Apply diklik
+            applyJob(jobId)
+        }
         rcDt.layoutManager = LinearLayoutManager(this)
         rcDt.adapter = jobAdapter
+
 
         // 4. Load Data dari Server
         loadJobData()
 
         btnRefresh.setOnClickListener {
             loadJobData()
+        }
+    }
+    private fun applyJob(jobId: Int) {
+        // Tampilkan loading kecil atau toast progress (opsional)
+        Toast.makeText(this, "Mengirim lamaran...", Toast.LENGTH_SHORT).show()
+
+        lifecycleScope.launch {
+            try {
+                // Panggil API Apply
+                val response = RetrofitClient.getInstance(this@MainActivity).applyJob(jobId)
+
+                if (response.isSuccessful) {
+                    // Code 200: Sukses
+                    val message = response.body()?.message ?: "Lamaran berhasil dikirim!"
+                    Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                } else {
+                    // Code 400 (Sudah Apply) atau 404 (Job Hilang)
+                    // Kita harus membaca manual errorBody karena Retrofit menganggap ini error
+                    val errorJson = response.errorBody()?.string()
+
+                    if (errorJson != null) {
+                        try {
+                            // Convert JSON error ke Object GeneralResponse agar bisa ambil messagenya
+                            val errorResponse = Gson().fromJson(errorJson, GeneralResponse::class.java)
+                            Toast.makeText(this@MainActivity, errorResponse.message, Toast.LENGTH_LONG).show()
+                        } catch (e: Exception) {
+                            Toast.makeText(this@MainActivity, "Terjadi kesalahan: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        Toast.makeText(this@MainActivity, "Gagal mengirim lamaran", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Koneksi Error: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

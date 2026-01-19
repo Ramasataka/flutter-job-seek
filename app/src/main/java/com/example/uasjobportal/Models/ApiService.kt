@@ -28,4 +28,7 @@ interface ApiService {
 
     @GET("seeker/jobs")
     suspend fun getSeekerJobs(): Response<JobSeekerResponse>
+
+    @POST("seeker/jobs/{id}/apply")
+    suspend fun applyJob(@Path("id") jobId: Int): Response<GeneralResponse>
 }

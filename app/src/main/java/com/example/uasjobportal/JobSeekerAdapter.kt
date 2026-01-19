@@ -11,7 +11,8 @@ import com.example.uasjobportal.Models.JobData
 import com.example.uasjobportal.utils.CurrencyHelper
 
 class JobSeekerAdapter(
-    private var jobList: List<JobData>
+    private var jobList: List<JobData>,
+    private val onApplyClick: (Int) -> Unit
 ) : RecyclerView.Adapter<JobSeekerAdapter.JobViewHolder>() {
 
     class JobViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -39,8 +40,9 @@ class JobSeekerAdapter(
         holder.tvDesc.text = job.jobDesc
 
         holder.btnApply.setOnClickListener {
-            // Logic Apply akan ditambahkan nanti
-            Toast.makeText(holder.itemView.context, "Applied to ${job.title}", Toast.LENGTH_SHORT).show()
+            // Panggil callback yang dikirim dari MainActivity
+            // Kirim ID job yang dipilih
+            onApplyClick(job.id)
         }
     }
 
