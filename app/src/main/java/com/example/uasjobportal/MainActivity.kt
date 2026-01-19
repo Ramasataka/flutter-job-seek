@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ProgressBar
+import android.widget.SearchView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -15,14 +16,17 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.uasjobportal.Models.GeneralResponse
 import com.example.uasjobportal.SharedPreferences.SessionManager
 import com.example.uasjobportal.accessRetroFit.RetrofitClient
+import com.example.uasjobportal.utils.goingTo
 import com.google.gson.Gson
 import kotlinx.coroutines.launch
 
+
 class MainActivity : AppCompatActivity() {
 
-    lateinit var sessionManager: SessionManager
-    lateinit var btnLogout: Button
-    lateinit var rcDt: RecyclerView
+    private lateinit var sessionManager: SessionManager
+    private lateinit var btnProfile: Button
+    private lateinit var rcDt: RecyclerView
+    private lateinit var searchView: SearchView // Variable Search
     private lateinit var btnRefresh: ImageButton // Variable tombol refresh
     private lateinit var progressBar: ProgressBar // Variable loading
     private lateinit var tvEmpty: TextView
@@ -42,38 +46,41 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        // Jika ada token, load layout dashboard
         setContentView(R.layout.activity_main)
-        // Note: Saya pakai activity_auth.xml sesuai request anda sebelumnya
-        // yang berisi RecylerView jobList
 
-        // Inisialisasi View
+        // Init Views
         rcDt = findViewById(R.id.jobList)
-        btnRefresh = findViewById(R.id.btnRefresh) // Bind tombol refresh
-        progressBar = findViewById(R.id.progressBar) // Bind loading
+        btnProfile = findViewById(R.id.buttonToProfile) // ID Baru
+        btnRefresh = findViewById(R.id.btnRefresh)
+        searchView = findViewById(R.id.search_bar) // Bind Search View
+        progressBar = findViewById(R.id.progressBar)
         tvEmpty = findViewById(R.id.tvEmpty)
 
-        // Saya gunakan buttonLogReg sebagai tombol logout
-        btnLogout = findViewById(R.id.buttonLogReg)
-        btnLogout.text = "LOGOUT" // Ubah teks jadi logout
-
-        btnLogout.setOnClickListener {
-            doLogout()
-        }
-
+        // Setup Adapter
         jobAdapter = JobSeekerAdapter(arrayListOf()) { jobId ->
-            // Ini akan dijalankan saat tombol Apply diklik
             applyJob(jobId)
         }
         rcDt.layoutManager = LinearLayoutManager(this)
         rcDt.adapter = jobAdapter
 
+        // Load Data Awal (Tanpa Search)
+        loadJobData(null)
 
-        // 4. Load Data dari Server
-        loadJobData()
+        // --- LISTENER SEARCH ---
+        setupSearchView()
 
+        // --- TOMBOL PROFILE ---
+        btnProfile.setOnClickListener {
+            // Pindah ke Profile Activity
+            startActivity(goingTo<SeekerProfileActivity>())
+        }
+
+        // Listener Refresh
         btnRefresh.setOnClickListener {
-            loadJobData()
+            // Kosongkan search bar saat refresh
+            searchView.setQuery("", false)
+            searchView.clearFocus()
+            loadJobData(null)
         }
     }
     private fun applyJob(jobId: Int) {
@@ -111,19 +118,39 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+    private fun setupSearchView() {
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String?): Boolean {
+                // Panggil API saat tombol search di keyboard ditekan
+                loadJobData(query)
+                return true
+            }
 
-    private fun loadJobData() {
-        // 1. Tampilkan Loading, Sembunyikan List
+            override fun onQueryTextChange(newText: String?): Boolean {
+                // Opsional: Jika ingin search real-time saat ngetik
+                // loadJobData(newText)
+
+                // Jika teks dihapus semua, load data awal
+                if (newText.isNullOrEmpty()) {
+                    loadJobData(null)
+                }
+                return false
+            }
+        })
+    }
+
+    // Update parameter function untuk menerima search query
+    private fun loadJobData(keyword: String?) {
         progressBar.visibility = View.VISIBLE
         rcDt.visibility = View.GONE
         tvEmpty.visibility = View.GONE
-        btnRefresh.isEnabled = false // Disable tombol biar gak di klik berkali2
+        btnRefresh.isEnabled = false
 
         lifecycleScope.launch {
             try {
-                val response = RetrofitClient.getInstance(this@MainActivity).getSeekerJobs()
+                // Kirim parameter keyword ke API
+                val response = RetrofitClient.getInstance(this@MainActivity).getSeekerJobs(keyword)
 
-                // 2. Sembunyikan Loading setelah request selesai
                 progressBar.visibility = View.GONE
                 btnRefresh.isEnabled = true
 
@@ -131,11 +158,10 @@ class MainActivity : AppCompatActivity() {
                     val body = response.body()
                     if (body != null && body.success) {
                         if (body.data.isNotEmpty()) {
-                            // Data Ada
                             rcDt.visibility = View.VISIBLE
                             jobAdapter.setData(body.data)
                         } else {
-                            // Data Kosong
+                            tvEmpty.text = "Tidak ada pekerjaan ditemukan"
                             tvEmpty.visibility = View.VISIBLE
                         }
                     } else {
@@ -144,7 +170,6 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     Toast.makeText(this@MainActivity, "Error Server: ${response.code()}", Toast.LENGTH_SHORT).show()
                 }
-
             } catch (e: Exception) {
                 progressBar.visibility = View.GONE
                 btnRefresh.isEnabled = true

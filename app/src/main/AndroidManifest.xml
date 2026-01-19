@@ -15,7 +15,7 @@
         android:theme="@style/Theme.UasJobPortal"
         android:usesCleartextTraffic="true">
         <activity
-            android:name=".ProfileActivity"
+            android:name=".SeekerProfileActivity"
             android:exported="false" />
         <activity
             android:name=".RegisterActivity"

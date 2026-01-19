@@ -7,6 +7,7 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
     // Endpoint Login (Public)
@@ -27,7 +28,9 @@ interface ApiService {
     suspend fun getCurrentUser(): Response<User>
 
     @GET("seeker/jobs")
-    suspend fun getSeekerJobs(): Response<JobSeekerResponse>
+    suspend fun getSeekerJobs(
+        @Query("search") search: String? = null // Parameter opsional
+    ): Response<JobSeekerResponse>
 
     @POST("seeker/jobs/{id}/apply")
     suspend fun applyJob(@Path("id") jobId: Int): Response<GeneralResponse>
