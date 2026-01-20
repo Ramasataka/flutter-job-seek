@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".UpdateProfileActivity">
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#F5F5F5">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="center_horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Update Profile"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="32dp"/>
+
+            <EditText
+                android:id="@+id/etUsername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Username"
+                android:background="@android:color/white"
+                android:padding="12dp"
+                android:minHeight="48dp"
+                android:layout_marginBottom="16dp"/>
+
+            <EditText
+                android:id="@+id/etCompanyName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Company Name"
+                android:background="@android:color/white"
+                android:padding="12dp"
+                android:minHeight="48dp"
+                android:layout_marginBottom="16dp"/>
+
+            <EditText
+                android:id="@+id/etCompanyAddress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Company Address"
+                android:background="@android:color/white"
+                android:padding="12dp"
+                android:minHeight="48dp"
+                android:layout_marginBottom="16dp"/>
+
+            <EditText
+                android:id="@+id/etCompanyDesc"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:gravity="top"
+                android:hint="Company Description"
+                android:background="@android:color/white"
+                android:padding="12dp"
+                android:layout_marginBottom="24dp"/>
+
+            <Button
+                android:id="@+id/btnUpdateProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="UPDATE PROFILE"
+                android:backgroundTint="#00BCD4" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
